@@ -17,7 +17,8 @@ import { LEVELS } from './haptics.js';
   var GROUPS = [
     { key: "general", title: "settings.group.general", items: ["vibration", "language"] },
     { key: "downloads", title: "settings.group.downloads", items: ["speed", "disk", "pkg", "cleanup"] },
-    { key: "services", title: "settings.group.services", items: ["torbox", "realdebrid", "premiumize", "qbittorrent"] }
+    { key: "services", title: "settings.group.services", items: ["torbox", "realdebrid", "premiumize", "qbittorrent"] },
+    { key: "about", title: "settings.group.about", items: ["credits"] }
   ];
 
   // `brand` draws the service's own logo, the same mark the Downloads page puts on its cards.
@@ -31,7 +32,8 @@ import { LEVELS } from './haptics.js';
     torbox: { brand: "torbox", title: "add.torboxName", lead: "settings.torboxLead" },
     realdebrid: { brand: "realdebrid", title: "add.realdebridName", lead: "settings.realdebridLead" },
     premiumize: { brand: "premiumize", title: "add.premiumizeName", lead: "settings.premiumizeLead" },
-    qbittorrent: { brand: "qbittorrent", title: "add.qbittorrentName", lead: "settings.qbittorrentLead" }
+    qbittorrent: { brand: "qbittorrent", title: "add.qbittorrentName", lead: "settings.qbittorrentLead" },
+    credits: { icon: "file", title: "settings.credits", lead: "settings.creditsLead" }
   };
 
   // The services a page opens, and the two whose account is linked from the phone with a QR code

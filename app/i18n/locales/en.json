@@ -628,6 +628,8 @@
     "settings.group.downloads": "Downloads",
     "settings.group.services": "Linked services",
     "settings.group.about": "About",
+    "settings.credits": "Credits",
+    "settings.creditsLead": "The people behind Overdrive and its community revival.",
     "settings.recommended": "Recommended",
     "settings.faster": "Faster",
     "settings.unlink": "Unlink",

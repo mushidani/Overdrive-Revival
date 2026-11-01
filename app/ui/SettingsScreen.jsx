@@ -28,6 +28,7 @@ import { LogoMark } from './Logo.jsx';
 import { PlatformBadge } from './PlatformBadge.jsx';
 import { HINT, useHints } from './Legend.jsx';
 import { colors } from './colors.js';
+import { CreditsScreen } from './CreditsScreen.jsx';
 import { formatBytes } from '../state/size.js';
 import { URLDialog } from '../downloads/URLDialog.jsx';
 import { PhoneSetup } from '../downloads/PhoneSetup.jsx';
@@ -90,6 +91,77 @@ import { FileSystem, FocusScope, ScrollView, Text, View, useIsFocused } from '@p
   function Tile({ id, item, value, onPress }) {
     const t2 = useT();
     const focused = useIsFocused();
+
+    if (id === "credits") {
+      return /* @__PURE__ */ (0, jsx)(View, {
+        focusKey: "settings:tile:credits",
+        onPress,
+        style: (state) => [{
+          position: "relative",
+          width: TILE_W,
+          height: 128,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 24,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: "#38294b",
+          paddingLeft: 26,
+          paddingRight: 30,
+          backgroundColor: "#151119"
+        }, state.focused ? {
+          backgroundColor: "#20172a",
+          borderColor: "#7650a8"
+        } : null],
+        children: /* @__PURE__ */ (0, jsxs)(Fragment, {
+          children: [
+            /* @__PURE__ */ (0, jsx)(FocusRing, { round: "lg" }),
+
+            /* @__PURE__ */ (0, jsx)(View, {
+              style: {
+                width: 76,
+                height: 76,
+                borderRadius: 18,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: focused ? "#35234a" : "#261a32"
+              },
+              children: /* @__PURE__ */ (0, jsx)(LogoMark, { size: 46 })
+            }),
+
+            /* @__PURE__ */ (0, jsxs)(View, {
+              style: { flex: 1, gap: 6 },
+              children: [
+                /* @__PURE__ */ (0, jsx)(Text, {
+                  style: {
+                    fontFamily: "Inter-Regular",
+                    fontSize: 27,
+                    fontWeight: 600,
+                    color: colors.fg
+                  },
+                  children: "Credits"
+                }),
+                /* @__PURE__ */ (0, jsx)(Text, {
+                  style: {
+                    fontFamily: "Inter-Regular",
+                    fontSize: 19,
+                    color: "#a98acb"
+                  },
+                  children: "Community Revival  •  v1.1.1"
+                })
+              ]
+            }),
+
+            /* @__PURE__ */ (0, jsx)(Icon, {
+              name: "chevronRight",
+              size: 26,
+              color: focused ? colors.fg : "#9b82b6"
+            })
+          ]
+        })
+      });
+    }
+
     return /* @__PURE__ */ (0, jsx)(View, {
       focusKey: `settings:tile:${id}`,
       onPress,
@@ -267,7 +339,8 @@ import { FileSystem, FocusScope, ScrollView, Text, View, useIsFocused } from '@p
     const optionKey = (id, index) => `settings:option:${id}:${index}`;
     const open = (id) => {
       setPage(id);
-      focusLater(optionKey(id, selectedIndex(id, ctx, t2)));
+      if (id !== "credits")
+        focusLater(optionKey(id, selectedIndex(id, ctx, t2)));
     };
     const closePage = () => {
       setPage(null);
@@ -309,7 +382,9 @@ import { FileSystem, FocusScope, ScrollView, Text, View, useIsFocused } from '@p
           closePage();
           return true;
         },
-        children: /* @__PURE__ */ (0, jsx)(Detail, { id: page, ctx, t2, onPick: pick })
+        children: page === "credits"
+          ? /* @__PURE__ */ (0, jsx)(CreditsScreen, {})
+          : /* @__PURE__ */ (0, jsx)(Detail, { id: page, ctx, t2, onPick: pick })
       }) : null,
       dialog && dialog.type === "phone" ? /* @__PURE__ */ (0, jsx)(PhoneSetup, {
         service: dialog.service,

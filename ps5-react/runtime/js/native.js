@@ -505,8 +505,43 @@ export const Archives = Object.freeze({
   extract({sources, destination, maxBytes = 1024**4, password, stream = false}) {
     if (password != null && (typeof password !== 'string' || password.length > 1024 || password.includes('\0')))
       throw new TypeError('Archives.extract: password must be a string without NUL, at most 1024 UTF-8 bytes.');
-    const id = host().archives.extract(sources, destination, maxBytes, password ?? '', stream === true);
-    return networkTask(id, 'Archives.extract', destination, 'archives');
+    // Keep render-thread image polling alive while the archive worker enters its
+    // native memory hold. poll() is what safely trims unused decoded images.
+    imagePollingHolds++;
+    pollImagesSoon();
+    try {
+      const id = host().archives.extract(sources, destination, maxBytes, password ?? '', stream === true);
+      const task = networkTask(id, 'Archives.extract', destination, 'archives');
+
+      // The native worker acquires its memory hold asynchronously. Keep this
+      // temporary JS hold until that happens, then native memoryHeld() keeps
+      // polling alive for the remainder of the hold.
+      let stopWaitingForMemoryHold = null;
+      let pollingHoldActive = true;
+
+      const releasePollingHold = () => {
+        if (!pollingHoldActive) return;
+        pollingHoldActive = false;
+        stopWaitingForMemoryHold?.();
+        stopWaitingForMemoryHold = null;
+        imagePollingHolds--;
+      };
+
+      const waitForMemoryHold = () => {
+        if (host().image.memoryHeld()) releasePollingHold();
+      };
+
+      stopWaitingForMemoryHold = onFrameUnbatched(waitForMemoryHold);
+
+      // If the task ends before the worker's native memory hold is observed,
+      // release the temporary polling hold here instead.
+      task.done.finally(releasePollingHold).catch(() => {});
+
+      return task;
+    } catch (error) {
+      imagePollingHolds--;
+      throw error;
+    }
   },
   /** What the files' leading bytes are, and why their headers so far already rule out extraction.
    * Reads headers synchronously: a RAR's first file header, then more for about 100 ms and one header past it.
@@ -618,6 +653,8 @@ const pendingImages = new Map();
 // Finished loads the host has handed over and no listener has received yet, by id in arrival order.
 const arrivedImages = new Map();
 let stopImagePolling = null;
+// Keeps image polling alive while an operation is about to request native low-memory mode.
+let imagePollingHolds = 0;
 
 // Each image listener runs outside the frame batch, so its LegacyRoot render commits before elapsed
 // time is checked. A single synchronous render cannot be preempted, but delivery stops after the
@@ -646,7 +683,7 @@ function pollImages() {
     }
     if (performance.now() - start >= IMAGE_DELIVERY_BUDGET_MS) break;
   }
-  if (pendingImages.size === 0 && arrivedImages.size === 0) {
+  if (pendingImages.size === 0 && arrivedImages.size === 0 && imagePollingHolds === 0 && !host().image.memoryHeld()) {
     stopImagePolling();
     stopImagePolling = null;
   }

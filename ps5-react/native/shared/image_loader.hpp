@@ -82,6 +82,8 @@ void set_cache_bytes(std::size_t bytes);
 // Holds memory for a job that needs the heap (an extraction), or ends one hold (any thread). Holds
 // nest; the next poll() trims to the low budgets and the normal ones return when the last ends.
 void hold_memory(bool hold);
+// True while another subsystem is asking the image loader to minimize its caches.
+bool memory_held();
 // The heap the loader runs in, read on the render, fetch and decode threads (size 0: unknown).
 struct Heap { std::size_t live = 0, size = 0; };
 void set_heap_probe(Heap (*probe)());

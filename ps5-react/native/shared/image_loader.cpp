@@ -1098,6 +1098,7 @@ void note_registry(unsigned used) { counters.registry = used; }
 Memory memory() { return {encoded_bytes.load(), decoded_bytes.load()}; }
 void set_cache_bytes(std::size_t bytes) { cache_bytes = bytes; }
 void hold_memory(bool hold) { holds += hold ? 1 : -1; }
+bool memory_held() { return holds.load() > 0; }
 void set_heap_probe(Heap (*probe)()) { heap_probe = probe; }
 void defer(int ms) {
   deferred_until = (Clock::now() + std::chrono::milliseconds(ms)).time_since_epoch().count();
@@ -1151,6 +1152,7 @@ void note_registry(unsigned) {}
 Memory memory() { return {}; }
 void set_cache_bytes(std::size_t) {}
 void hold_memory(bool) {}
+bool memory_held() { return false; }
 void set_heap_probe(Heap (*)()) {}
 void defer(int) {}
 std::string stats() { return {}; }

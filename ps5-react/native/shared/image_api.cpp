@@ -105,6 +105,10 @@ JSValue defer(JSContext* ctx, JSValueConst, int argc, JSValueConst* argv) {
   return JS_UNDEFINED;
 }
 
+JSValue memoryHeld(JSContext* ctx, JSValueConst, int, JSValueConst*) {
+  return JS_NewBool(ctx, images::memory_held());
+}
+
 JSValue poll(JSContext* ctx, JSValueConst, int, JSValueConst*) {
   JSValue out = JS_NewArray(ctx);
   std::uint32_t index = 0;
@@ -136,7 +140,7 @@ void ps5_react_stop_images() { images::stop(unregister); }
 
 JSValue ps5_react_image_api(JSContext* ctx) {
   JSValue out = JS_NewObject(ctx);
-  for (const auto& item : {std::pair<const char*, JSCFunction*>{"load", &load}, {"release", &release}, {"warm", &warm}, {"defer", &defer}, {"poll", &poll}})
+  for (const auto& item : {std::pair<const char*, JSCFunction*>{"load", &load}, {"release", &release}, {"warm", &warm}, {"defer", &defer}, {"poll", &poll}, {"memoryHeld", &memoryHeld}})
     JS_SetPropertyStr(ctx, out, item.first, JS_NewCFunction(ctx, item.second, item.first, 0));
   return out;
 }

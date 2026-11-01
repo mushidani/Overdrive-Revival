@@ -2157,7 +2157,11 @@ import { VIKING_PAGE_PREFIX, VIKING_PREFIX, describeVikingCapture, linkPageMetad
         // download signs in and tries it (archive-account.js).
         if (release.unavailableReason && !(archiveAuth?.enabled?.() && archiveAuth.isArchive(release.browserUrl || release.url || ""))) throw new Error(release.unavailableReason);
         const artifact2 = artifactFor(release, root2);
-        if (fs.exists(artifact2.destination)) throw new Error("Destination already exists. Choose another release or inspect the existing file.");
+        // A completed download may remain after a later extraction/install failure.
+        // Let the native downloader's recoverCompleted path verify its completion
+        // receipt before adopting it; unrelated existing files are still refused.
+        if (fs.exists(artifact2.destination))
+          console.log(`[download-queue] ${id}: completed destination exists; letting native recovery verify it`);
         if (jobs.some((job2) => job2.artifact.destination === artifact2.destination)) throw new Error("Another queued release owns this filename.");
         const orphan = fs.exists(`${artifact2.destination}.part`);
         if (jobs.length === 32) jobs = jobs.filter((job2) => !COMPLETE.includes(job2.state));
